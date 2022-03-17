@@ -5,6 +5,9 @@ import { AxisBottom } from '@visx/axis';
 import { scaleBand, scaleLinear, scaleOrdinal } from '@visx/scale';
 import { timeParse, timeFormat } from 'd3-time-format';
 
+// The following section was in the visx BarGraph example. 
+// It uses TypeScript so I've converted this file from .js to .tsx
+
 export type BarGroupProps = {
   width: number;
   height: number;
@@ -20,10 +23,14 @@ export default function BarGraph({
   events = false,
   margin = defaultMargin,
 }: BarGroupProps) {
+
+  // Declare the colors as const variables  
   const purple = '#9caff6';
   const background = '#612efb';
   const blue = '#aeeef8';
   const green = '#e5fd3d';
+
+  // The data we wish to display
   const dummyData = [{
     dynamic_revenue: 500,
     static_revenue: 1000,
@@ -50,42 +57,55 @@ export default function BarGraph({
     year: '2025'
   }];
 
+  // The original code took a slice of this dummyData object.
+  // Here I'm using the whole thing
   const data1 = dummyData;
 
+  // This is a list of all the data keys we want to be represented by a
+  // vertical bar (so we exclude "year" from keys1
   const keys1 = Object.keys(data1[0]).filter((d) => d !== 'year');
-  const defaultMargin = { top: 40, right: 0, bottom: 40, left: 0 };
 
-  const formatDate = (date: string) => date;
-  console.log(keys1)
+  const defaultMargin = { top: 40, right: 0, bottom: 40, left: 0 };
 
   const xMax = width - margin.left - margin.right;
   const yMax = height - margin.top - margin.bottom;
 
+  // return the year parameter from an item
+  const getYear = (d: year) => d.year;
 
-  const getYear = (d: static_revenue) => d.year;
+  // When I removed this, the years on the bottom of the graph vanished
+  const formatYear = (date: string) => date;
 
+  // Creates a list of values representing the params 
   const paramScale = scaleBand<string>({
     domain: keys1,
     padding: 0.1,
   });
 
+  // Creates a list of values representing years 
   const yearScale = scaleBand<string>({
     domain: data1.map(getYear),
     padding: 0.2,
   });
 
+  // Creates a list containing the values of the params (static or dynamic revenue)
   const valueScale = scaleLinear<number>({
      domain: [0, Math.max(...data1.map((d) => Math.max(...keys1.map((key) => Number(d[key])))))],
   });
 
+  // Creates a list of the colors associated with each param
   const colorScale = scaleOrdinal<string, string>({
     domain: keys1,
     range: [blue, green, purple],
   }); 
 
-  // update scale output dimensions
+  // Fit all the years into the entire width
   yearScale.rangeRound([0, xMax]);
+
+  // Fit all params (static, dynamic) within one year band 
   paramScale.rangeRound([0, yearScale.bandwidth()]);
+
+  // Scale the magnitudes of the param values within the full height of the graph  
   valueScale.rangeRound([yMax, 0])
 
   return (
@@ -129,7 +149,7 @@ export default function BarGraph({
       </Group>
       <AxisBottom
         top={yMax + margin.top}
-        tickFormat={formatDate}
+        tickFormat={formatYear}
         scale={yearScale}
         stroke={green}
         tickStroke={green}
